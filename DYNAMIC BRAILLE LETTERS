@@ -1,0 +1,44 @@
+const int dotPins[6] = {2, 3, 4, 5, 6, 7}; // Dot 1–6 → D2–D7
+
+void setup() {
+  for (int i = 0; i < 6; i++) {
+    pinMode(dotPins[i], OUTPUT);
+    digitalWrite(dotPins[i], LOW);
+  }
+
+  delay(1000); // Start delay
+
+  // B = 1, 2
+  int b[] = {1, 2};
+  vibrate(b, 2);
+  delay(1000);
+
+  // A = 1
+  int a[] = {1};
+  vibrate(a, 1);
+  delay(1000);
+
+  // T = 2, 3, 4, 5
+  int t[] = {2, 3, 4, 5};
+  vibrate(t, 4);
+}
+
+void loop() {
+  // Nothing here
+}
+
+void vibrate(const int* dots, int len) {
+  // Turn on only selected pins
+  for (int i = 0; i < len; i++) {
+    digitalWrite(dotPins[dots[i] - 1], HIGH);
+  }
+
+  delay(300); // Vibration duration
+
+  // Turn off ALL pins, not just selected ones
+  for (int i = 0; i < 6; i++) {
+    digitalWrite(dotPins[i], LOW);
+  }
+
+  delay(200); // Pause before next letter
+}
