@@ -1,0 +1,61 @@
+#define DATA_PIN 2   // OUT → D2
+#define CLOCK_PIN 3  // SCK → D3
+
+long baseline = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(CLOCK_PIN, OUTPUT);
+
+  // Calibrate baseline on startup
+  long sum = 0;
+  for (int i = 0; i < 30; i++) {
+    sum += readPressure();
+    delay(50);
+  }
+  baseline = sum / 30;
+
+  Serial.print("Calibrated Baseline: ");
+  Serial.println(baseline);
+}
+
+void loop() {
+  long pressure = readPressure();
+  long delta = pressure - baseline;
+
+  Serial.print("Δ: ");
+  Serial.print(delta);
+
+  if (delta < -10000) {
+    Serial.println(" 🫧 Sip detected!");
+  } else if (delta > 10000) {
+    Serial.println(" 💨 Puff detected!");
+  } else {
+    Serial.println("");
+  }
+
+  delay(300);
+}
+
+long readPressure() {
+  long count = 0;
+  pinMode(DATA_PIN, INPUT);
+
+  while (digitalRead(DATA_PIN)); // Wait for sensor ready
+
+  for (int i = 0; i < 24; i++) {
+    digitalWrite(CLOCK_PIN, HIGH);
+    count = count << 1;
+    digitalWrite(CLOCK_PIN, LOW);
+    if (digitalRead(DATA_PIN)) count++;
+  }
+
+  // Final clock pulse
+  digitalWrite(CLOCK_PIN, HIGH);
+  digitalWrite(CLOCK_PIN, LOW);
+
+  // Convert 24-bit to signed long
+  if (count & 0x800000) count |= ~0xFFFFFF;
+
+  return count;
+}
